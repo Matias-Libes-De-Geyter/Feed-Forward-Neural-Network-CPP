@@ -1,56 +1,64 @@
 ﻿#include <SFML/Graphics.hpp>
-#include "TrainerClassifier/TrainerClassifier.h"
+#include "FFNN/FFNN.hpp"
+#include "Classifier/TrainerClassifier.hpp"
+#include "Classifier/Scope.hpp"
+#include "Dataset/Dataset.hpp"
+
 using namespace sf;
-#pragma GCC diagnostic ignored "-Wnarrowing"
 
-
-hyperparameters current_hyperparameters = {
-    input_dim: 28 * 28,
+hyperparameters hyper = {
+    input_dim : 28*28,
     output_dim : 10,
-    hidden_layers_sizes : {256, 128}, // Tested with { 64, 128, 256 } but same result.
-    epochs : 0, // If 0, model will train on the whole MNIST database
-    mini_batch_size : 32,
+    hidden_layer_sizes : {256, 128},
     learning_rate : 0.001,
-    adam_beta_m : 0.9,
-    adam_beta_v : 0.999,
+    dropout_rate : 0.2,
+    max_epochs : 30,
+    n_train_samples : 1000,
+    mini_batch_size : 32,
+    n_val_samples : 100,
 
-    // Regularization
-    dropout_rate : 0.001, // 0 if no dropout
-    early_stopping : false,
-    patience : 150,
-
-    // Learn & tests
-    learn : false,
-    test : false,
-
-    // Store loss and accuracy data in a .csv file for plotting
-    store_data : false
+    early_stopping : true,
+    patience : 3
 };
 
 int main() {
-    // Ask for model training
+    FFNN model(hyper);
+
+    bool learning = false;
     print("Train ? (y/n)"); char a; std::cin >> a;
-    if (a == 'y') current_hyperparameters.learn = true;
+    if (a == 'y') learning = true;
+
+    bool store = true;
+
+    if(learning) {
+
+        Scope scope(model, hyper);
     
-    // MLP init
-    MLP NN(current_hyperparameters);
+        TrainerClassifier trainer(model, hyper);
 
-    // Training
-    if (current_hyperparameters.learn) {
-        train(NN, current_hyperparameters);
-        NN.saveWeights("executable/model_weights.txt");
-    }
-    else {
-        NN.loadWeights("executable/model_weights.txt");
+        Dataset train = DataLoader(hyper, "train");
+        Dataset validation = DataLoader(hyper, "validation");
+
+        trainer.set_scope(scope);
+        trainer.set_data(train, validation);
+        print("Data has been successfully imported");
+
+        trainer.run(store);
+        model.saveWeights("executable/model_weights.txt");
+        print("Weights saved !");
+
+    } else {
+
+        model.loadWeights("executable/model_weights.txt");
         print("Weights loaded !");
+
     }
 
-    if (current_hyperparameters.test) test(NN, current_hyperparameters);
 
     // Window init
     sf::RenderWindow window(sf::VideoMode({ 800, 800 }), "Deep Learning with Adam Optimizer");
     window.setFramerateLimit(100);
-    sf::View view({ 14, 14 }, {30, 30});
+    sf::View view({ 14, 14 }, { 30, 30 });
     window.setView(view);
 
     // Canvas init
@@ -67,8 +75,8 @@ int main() {
     cursor.setOutlineColor(Color(0, 0, 0));
     // Brush border with 20% opacity
     const float brush_size = 0.75;
-    sf::CircleShape brush(brush_size*2, 5);
-    brush.setOrigin({ brush_size*2, brush_size*2 });
+    sf::CircleShape brush(brush_size * 2, 5);
+    brush.setOrigin({ brush_size * 2, brush_size * 2 });
     brush.setFillColor(Color(120, 0, 255, 50));
     // Brush center with 100% opacity
     sf::CircleShape brushCenter(brush_size, 5);
@@ -100,14 +108,13 @@ int main() {
                 // "A" gives number prediction from the canvas
                 if (keyPressed->scancode == sf::Keyboard::Scancode::A) {
                     if (firstPress) {
-                        dmatrix pixels(1, dvector(28 * 28, 0));
-                        for (int i = 0; i < 28; i++)
-                            for (int j = 0; j < 28; j++)
-                                pixels[0][j * 28 + i] = 1.f - static_cast<int>(canvas.getTexture().copyToImage().getPixel({ i, j }).g) / 255.f;
-                        
-                        dmatrix output = NN.forward(pixels);
-                        int number = std::distance(output[0].begin(), std::max_element(output[0].begin(), output[0].end()));
-                        print("The number you've drawn is ", number, " !!!");
+                        Matrix pixels(1, 28 * 28);
+                        for (size_t i = 0; i < 28; i++)
+                            for (size_t j = 0; j < 28; j++)
+                                pixels(0, j * 28 + i) = 1.f - static_cast<int>(canvas.getTexture().copyToImage().getPixel({ i, j }).g) / 255.f;
+
+                        model.forward(pixels);
+                        print("The number you've drawn is ", model.getOutput().getMaxIndex(), " !!!");
                     }
                     firstPress = false;
                 }
@@ -129,12 +136,14 @@ int main() {
                 }
             }
         }
-         
-        
+
+
         // Updating each frame
         window.clear(sf::Color(64, 64, 64));
         window.draw(sprite);
         window.draw(cursor);
         window.display();
     }
+
+    return 0;
 }

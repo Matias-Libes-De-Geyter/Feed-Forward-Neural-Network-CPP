@@ -1,4 +1,4 @@
-﻿# MLP-pattern-recognition
+﻿# Feed-Forward-Neural-Network-CPP
 ### Model
 - **Model:** Feed-Forward Neural Network,
 - **Optimizer:** Adam optimizer,
@@ -9,7 +9,7 @@ The aim of this project was, using a very simple Feed-Forward Neural Network and
 
 ### Why C++ ?
 - Firstly, I used C++ because I'm much more familiar with it than Python. I was also interested to challenge myself to see if I could build a neural network from scratch, without pytorch or similar libraries.
-- Secondly, I used "SFML", a graphic library (with which I've done many projects), to ask the user to draw a number, and ask the MLP to output its guess.
+- Secondly, I used "SFML", a graphic library (with which I've done many projects), to ask the user to draw a number, and ask the FFNN to output its guess.
 - Most importantly, C++ was chosen for it's compatibility with CUDA (which uses GPU), on which the code was translated. This is in the file "CUDA VERSION".
 
 ## Demo
@@ -25,10 +25,10 @@ Training & testing previews:
 ## Methodology
 Firstly, I created the Matrix class to handle operations and vectors. From then on:
 - Creation the DenseBlock class. I chose to put biases inside the weight matrices, and to initialise the weight matrices already transposed.
-- Creation the MLP class, and implementation of the forward pass with softmax activation at the end.
+- Creation the FFNN class, and implementation of the forward pass with softmax activation at the end.
 - Implementation of backpropagation using matrix operations and math.
-- Addition of Adam optimizer as detailed in the class. I used the same constants, and added a small coefficient ```1e-8``` in the expression of $$w_{ij}^{l+1}$$, such that $$\frac{1}{\sqrt(\hat{v})} \longrightarrow \frac{1}{\sqrt(\hat{v}) + 10^{-8}}$$ in case $$\sqrt(\hat{v})$$ is null.
-- Creation of TrainerClassifier to train the Neural Network.
+- Optimization with Adam optimizer as detailed in the Scope class. I used the same constants, and added a small coefficient ```1e-8``` in the expression of $$w_{ij}^{l+1}$$, such that $$\frac{1}{\sqrt(\hat{v})} \longrightarrow \frac{1}{\sqrt(\hat{v}) + 10^{-8}}$$ in case $$\sqrt(\hat{v})$$ is null.
+- Creation of TrainerClassifier to put everything together.
 
 After implementing these classes and having a good accuracy on MNIST database, I've implemented the SFML library to create a drawing canvas.
 
@@ -37,8 +37,8 @@ After implementing these classes and having a good accuracy on MNIST database, I
 - I used a learning rate of $$10^{-3}$$. It gave good results compared to 0.01.
 - There's two layers of 256 and 128 neurons.
 - In Adam optimizer, $$\beta_m = 0.9$$ and $$\beta_v = 0.999$$.
-- I used batches of **32 images**, and used it on the whole dataset. It worked better than 16 or 64. Since the **MNIST** dataset has 60000 training images, we had $$60000/32 \approx 1850$$ epochs. I'm not sure that's how epochs work, but for my test it worked well like this !
-- If early stopping is toggled, patience $$= 150$$. Below gives bad results and stops the learning too early.
+- I used batches of **32 images**, and used it on the whole dataset. It worked better than 16 or 64. Since the **MNIST** dataset has 60000 training images, we only trained on $$1000$$ samples, during 30 epochs. A validation dataset was prepared with $$500$$ images.
+- If early stopping is toggled, patience $$= 3$$.
 
 ## Results
 
@@ -46,16 +46,16 @@ After implementing these classes and having a good accuracy on MNIST database, I
 - Results on MNIST train database. When ran into the whole training database, the model gives the following results:
 ![Plots](img/output.png)
 
-Here, values are plotted each 20-or-so epochs, otherwise my computer would take too much time to compute, and we couldn't see anything. We can see the training loss, and accuracy for each epochs.
+Here, the early stopper stopped the training after 20-or-so epochs. We can see the training accuracy, validation accuracy and training loss for each epochs.
 
 - Results on MNIST test database:
 
-After training on the whole train database, the model provides an **accuracy of $$96.779$$%** when tested on MNIST database's test files.
+After training on the whole train database, the model provides an **accuracy of $$98$$%** when tested on MNIST database's test files.
 
 - In parallel, the code on CUDA ran two to four times faster than the basic C++ code. It is an interesting result that could be useful in the future.
 
 ### Discussion
-- As we can see of the plots, the accuracy rises quite quickly, before settling. This could mean that the model doesn't have to be ran this long to get a good accuracy.
+- As we can see of the plots, the accuracy rises quite quickly, before settling.
 - Also, the tests runs well on MNIST database, but when drawing numbers, the accuracy drops. This could be because the numbers of the database used for training are all centered, and that the way they were generated was different than mine. I tried to implement a gradient around the brush to fit the MNIST database-style and it gave better results, but it wasn't enough.
 
 ### Next steps
@@ -68,7 +68,7 @@ After training on the whole train database, the model provides an **accuracy of 
 
 ## How to Use
 
-- Run the ```MLP.bat``` file. To train, press 'y'. Any other input would lead to the test interface.
+- Run the ```FFNN.bat``` file. To train, press 'y'. Any other input would lead to the test interface.
 - If training:
   - To plot the output of the training, run the ```plot.py``` file from the main folder.
 - If testing:
@@ -90,7 +90,7 @@ To change the hyperparameters except boolean ```training```, you must recompile 
 ```plaintext
 NeuralNetwork/
 │
-├── CUDA VERSION/       # The MLP version exploiting CUDA features (x2-x4 computation time gain). No interface.
+├── CUDA VERSION/       # The FFNN version exploiting CUDA features (x2-x4 computation time gain). No interface.
 │
 ├── executable/
 │   ├── database/       # Dataset
@@ -109,26 +109,30 @@ NeuralNetwork/
 │   └── lib/
 │
 ├── Neural_Network/     # Main codes of the repository
-│   ├── DenseBlock/
+│   ├── Blocks/
 │   │   ├── DenseBlock.cpp
-│   │   └── DenseBlock.h
-│   ├── MLP/
-│   │   ├── MLP.cpp
-│   │   └── MLP.h
-│   ├── TrainerClassifier/
+│   │   └── DenseBlock.hpp
+│   ├── Classifier/
 │   │   ├── TrainerClassifier.cpp
-│   │   └── TrainerClassifier.h
+│   │   └── TrainerClassifier.hpp
+│   │   ├── Scope.cpp
+│   │   └── Scope.hpp
+│   ├── Dataset/
+│   │   └── Dataset.hpp
+│   ├── FFNN/
+│   │   ├── FFNN.cpp
+│   │   └── FFNN.hpp
 │   ├── Utilities/
 │   │   ├── functions.cpp
-│   │   ├── functions.h
+│   │   ├── functions.hpp
 │   │   ├── Matrix.cpp
-│   │   └── Matrix.h
+│   │   └── Matrix.hpp
 │   │
 │   ├── main.cpp        # Main code that initiate all variables
 │   └── plot.py         # Run "py Neural_Network/plot.py" to get a plot of the result of the training
 │
 ├── MakeFile
-├── MLP.bat             # Execute this file to test the program
+├── FFNN.bat             # Execute this file to test the program
 ├── README.md           
 └── training_data.csv   # Output from the training process, to plot the loss and accuracy
 ```
