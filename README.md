@@ -44,13 +44,13 @@ After implementing these classes and having a good accuracy on MNIST database, I
 
 ### Observations
 - Results on MNIST train database. When ran into the whole training database, the model gives the following results:
-![Plots](img/output.png)
+![Plots](img/latest_output.png)
 
 Here, the early stopper stopped the training after 20-or-so epochs. We can see the training accuracy, validation accuracy and training loss for each epochs.
 
 - Results on MNIST test database:
 
-After training on the whole train database, the model provides an **accuracy of $$98$$%** when tested on MNIST database's test files.
+After training on the whole train database, the model provides an **accuracy of $$\approx 88$$%** when tested on MNIST database's test files.
 
 - In parallel, the code on CUDA ran two to four times faster than the basic C++ code. It is an interesting result that could be useful in the future.
 
@@ -102,7 +102,8 @@ NeuralNetwork/
 ├── img/
 │   ├── testing.gif     # Training example
 │   ├── training.gif    # Testing example
-│   └── output.png
+│   ├── old_output.png
+│   └── latest_output.png
 │
 ├── libs/          # SFML Library used for the window
 │   ├── include/

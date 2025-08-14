@@ -16,6 +16,7 @@
 
 using d_vector = std::vector<double>;
 using d_matrix = std::vector<std::vector<double>>;
+#pragma GCC diagnostic ignored "-Wnarrowing"
 
 class Matrix {
 private:
