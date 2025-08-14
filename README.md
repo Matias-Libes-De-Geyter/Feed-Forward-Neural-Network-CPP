@@ -1,4 +1,4 @@
-﻿# Feed-Forward-Neural-Network-CPP
+﻿# Feed-Forward Neural Network (in CPP)
 ### Model
 - **Model:** Feed-Forward Neural Network,
 - **Optimizer:** Adam optimizer,
