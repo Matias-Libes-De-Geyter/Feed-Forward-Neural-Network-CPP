@@ -37,8 +37,8 @@ After implementing these classes and having a good accuracy on MNIST database, I
 - I used a learning rate of $$10^{-3}$$. It gave good results compared to 0.01.
 - There's two layers of 256 and 128 neurons.
 - In Adam optimizer, $$\beta_m = 0.9$$ and $$\beta_v = 0.999$$.
-- I used batches of **32 images**, and used it on the whole dataset. It worked better than 16 or 64. Since the **MNIST** dataset has 60000 training images, we only trained on $$1000$$ samples, during 30 epochs. A validation dataset was prepared with $$500$$ images.
-- If early stopping is toggled, patience $$= 3$$.
+- I used batches of **32 images**, and used it on the whole dataset. It worked better than 16 or 64. Since the **MNIST** dataset has 60000 training images, we only trained on $$10000$$ samples, during 50 epochs. A validation dataset was prepared with $$1000$$ images.
+- If early stopping is toggled, patience $$= 10$$.
 
 ## Results
 
@@ -46,11 +46,11 @@ After implementing these classes and having a good accuracy on MNIST database, I
 - Results on MNIST train database. When ran into the whole training database, the model gives the following results:
 ![Plots](img/latest_output.png)
 
-Here, the early stopper stopped the training after 20-or-so epochs. We can see the training accuracy, validation accuracy and training loss for each epochs.
+Here, the early stopper stopped the training after 40-or-so epochs. We can see the training accuracy, validation accuracy and training loss for each epochs.
 
 - Results on MNIST test database:
 
-After training on the whole train database, the model provides an **accuracy of $$\approx 88$$%** when tested on MNIST database's test files.
+After training on the whole train database, the model provides an **accuracy of $$\approx 96$$%** when tested on MNIST database's test files.
 
 - In parallel, the code on CUDA ran two to four times faster than the basic C++ code. It is an interesting result that could be useful in the future.
 
